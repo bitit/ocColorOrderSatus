@@ -1,0 +1,1 @@
+ALTER TABLE `ocart2_order_status` ADD `color` char(6) NOT NULL DEFAULT 'FFFFFF';
