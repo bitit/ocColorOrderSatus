@@ -90,7 +90,10 @@
 		]]></add>
 		</operation>
 	</file>
-	<file path="admin/view/template/sale/order_list.tpl">
+	
+	<!-- Select dropdowns -->
+	
+	<file path="admin/view/template/{report,sale}/{sale_order,order_info,order_form}.tpl">
 		<operation>
 			<search><![CDATA[<option value="<?php echo $order_status['order_status_id']; ?>"]]></search>
 			<add position="replace"><![CDATA[
@@ -113,10 +116,30 @@
 	<!-- Order Edit and View -->
 	<file path="admin/view/template/sale/order_{info,form}.tpl"> 
 		<operation>
-			<search><![CDATA[<td id="order-status"><?php echo $order_status; ?></td>]]></search>
+			<search><![CDATA[<?php echo $order_status; ?>]]></search>
 			<add position="replace"><![CDATA[
-				<td id="order-status"><div class="btn btn-xs" style="background-color: <?php echo $order_status_color; ?>"><?php echo $order_status; ?></td>
+				<div class="btn btn-xs" style="background-color: <?php echo $order_status_color; ?>"><?php echo $order_status; ?>
 		 ]]></add>
 		</operation>
 	</file>
+	
+	<!-- Dashboard -->
+	<file path="admin/controller/dashboard/recent.php">
+		<operation>
+			<search><![CDATA['status'     => $result['status'],]]></search>
+			<add position="after"><![CDATA[
+					'status_color'        => $result['status_color'],
+		]]></add>
+		</operation>
+	</file>
+	
+	<file path="admin/view/template/dashboard/recent.tpl"> 
+		<operation>
+			<search><![CDATA[<?php echo $order['status']; ?>]]></search>
+			<add position="replace"><![CDATA[
+				<div class="btn btn-xs" style="background-color: <?php echo $order['status_color']; ?>" ><?php echo $order['status']; ?></div> 
+		 ]]></add>
+		</operation>
+	</file>
+	
 </modification>
