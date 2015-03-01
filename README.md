@@ -1,3 +1,3 @@
-Adds color to order status in admin interface.
+Adds color to orderstatus in admin interface.
 
-Can be edited in order status settings.
+Can edit in orderstatus settings.
