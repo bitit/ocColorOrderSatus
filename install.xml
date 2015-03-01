@@ -4,13 +4,33 @@
     <version>1.0</version>
     <author>Bitit</author>
     <code>bitit_order_color</code>
+    <link>https://github.com/bitit/ocColorOrderSatus</link>
+    <!-- Config -->
+    
     <file path="admin/controller/localisation/order_status.php">
 		<operation>
 			<search><![CDATA['order_status_id' => $result['order_status_id'],]]></search>
 			<add position="after"><![CDATA['color' => $result['color'],]]></add>
 		</operation>
 	</file>
-
+    <file path="admin/controller/localisation/order_status.php">
+		<operation>
+			<search><![CDATA['order_status_id' => $result['order_status_id'],]]></search>
+			<add position="after"><![CDATA['color' => $result['color'],]]></add>
+		</operation>
+	</file>
+	<file path="admin/model/localisation/order_status.php">
+		<operation>
+			<search><![CDATA[$order_status_data[$result['language_id']] = array('name' => $result['name']);]]></search>
+			<add position="replace"><![CDATA[$order_status_data[$result['language_id']] = array('name' => $result['name'],'color' => $result['color']);]]></add>
+		</operation>
+	</file>
+	<file path="admin/model/localisation/order_status.php">
+		<operation>
+			<search><![CDATA[$this->db->query("INSERT INTO " . DB_PREFIX . "order_status SET order_status_id = '" . (int)$order_status_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");]]></search>
+			<add position="replace"><![CDATA[$this->db->query("INSERT INTO " . DB_PREFIX . "order_status SET order_status_id = '" . (int)$order_status_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "', color = '" . $this->db->escape($value['color']) . "'");]]></add>
+		</operation>
+	</file>
 	<file path="admin/view/template/localisation/order_status_list.tpl">
 		<operation>
 			<search><![CDATA[<td class="text-right"><?php echo $column_action; ?></td>]]></search>
@@ -20,7 +40,83 @@
 	<file path="admin/view/template/localisation/order_status_list.tpl">
 		<operation>
 			<search><![CDATA[<td class="text-left"><?php echo $order_status['name']; ?></td>]]></search>
-			<add position="after"><![CDATA[<td><div style="width: 10px;height: 10px;background-color: #<?php echo $order_status['color']; ?>";"></div></td>]]></add>
+			<add position="after"><![CDATA[<td><div style="width: 10px;height: 10px;background-color: <?php echo $order_status['color']; ?>";"></div></td>]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/localisation/order_status_form.tpl">
+		<operation>
+			<search><![CDATA[<input type="text" name="order_status[<?php echo $language['language_id']; ?>][name]" value="<?php echo isset($order_status[$language['language_id']]) ? $order_status[$language['language_id']]['name'] : ''; ?>" placeholder="<?php echo $entry_name; ?>" class="form-control" />]]></search>
+			<add position="after"><![CDATA[
+				<input type="color" name="order_status[<?php echo $language['language_id']; ?>][color]" value="<?php echo $order_status[$language['language_id']]['color'] ?>">
+		]]></add>
+		</operation>
+	</file>
+	
+	<!-- Order List -->
+	
+	<file path="admin/model/sale/order.php">
+		<operation>
+			<search><![CDATA[$sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status, o.shipping_code, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";]]></search>
+			<add position="replace"><![CDATA[
+					// This is UGLY
+					$sql = " SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, 
+						(SELECT os.name FROM ocart2_order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '2') AS status, 
+						(SELECT os.color FROM ocart2_order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '2') AS status_color, 
+						o.shipping_code, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `ocart2_order` o";
+		]]></add>
+		</operation>
+	</file>
+	<file path="admin/model/localisation/order_status.php">
+		<operation>
+			<search><![CDATA[$query = $this->db->query("SELECT order_status_id, name FROM " . DB_PREFIX . "order_status WHERE language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY name");]]></search>
+			<add position="replace"><![CDATA[
+					$query = $this->db->query("SELECT order_status_id, name, color FROM " . DB_PREFIX . "order_status WHERE language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY name");
+		]]></add>
+		</operation>
+	</file>
+	<file path="admin/controller/sale/order.php">
+		<operation>
+			<search><![CDATA['status'        => $result['status'],]]></search>
+			<add position="after"><![CDATA[
+					'status_color'        => $result['status_color'],
+		]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/sale/order_list.tpl">
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $order['status']; ?></td>]]></search>
+			<add position="replace"><![CDATA[
+					<td class="text-left"><div class="btn btn-xs" style="background-color: <?php echo $order['status_color']; ?>" ><?php echo $order['status']; ?></div></td>
+		]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/sale/order_list.tpl">
+		<operation>
+			<search><![CDATA[<option value="<?php echo $order_status['order_status_id']; ?>"]]></search>
+			<add position="replace"><![CDATA[
+				<option value="<?php echo $order_status['order_status_id']; ?>" style="background-color: <?php echo $order_status['color']; ?>"
+		 ]]></add>
+		</operation>
+	</file>
+	
+	<!-- View Order -->
+	
+	<file path="admin/controller/sale/order.php">
+		<operation>
+			<search><![CDATA[$data['order_status'] = $order_status_info['name'];]]></search>
+			<add position="after"><![CDATA[
+				$data['order_status_color'] = $order_status_info['color'];
+		 ]]></add>
+		</operation>
+	</file>
+	
+	<!-- Order Edit and View -->
+	<file path="admin/view/template/sale/order_{info,form}.tpl"> 
+		<operation>
+			<search><![CDATA[<td id="order-status"><?php echo $order_status; ?></td>]]></search>
+			<add position="replace"><![CDATA[
+				<td id="order-status"><div class="btn btn-xs" style="background-color: <?php echo $order_status_color; ?>"><?php echo $order_status; ?></td>
+		 ]]></add>
 		</operation>
 	</file>
 </modification>
